@@ -283,8 +283,7 @@ if __name__ == '__main__':
         except Exception as e:
             # error reporting with stack trace.
             # with open("error.txt", "w") as f:
-			trace = traceback.format_exc
-			logging.info("EXCEPTION: {}".format(str(e)) + "\n" * 3 + trace)
-                # f.write(str(e) + "\n" * 3 + str(trace()))
+            trace = traceback.format_exc
+            logging.info("EXCEPTION: {}".format(str(e)) + "\n" * 3 + str(trace))
+            # f.write(str(e) + "\n" * 3 + str(trace()))
             time.sleep(10)
-            pass
