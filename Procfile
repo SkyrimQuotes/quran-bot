@@ -1,1 +1,1 @@
-worker: start
+worker: python commentbot.py & python submissionbot.py
