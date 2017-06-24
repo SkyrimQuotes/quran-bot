@@ -32,6 +32,7 @@ if __name__ == '__main__':
         try:
             logging.info("starting...")
             editedstream()
+            logging.info("sleeping...")
             time.sleep(60)
             logging.info("ended.")
 
