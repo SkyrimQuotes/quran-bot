@@ -1,1 +1,2 @@
-worker: python commentbot.py && python submissionbot.py
+worker: python commentbot.py
+worker: python submissionbot.py

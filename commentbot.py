@@ -42,13 +42,17 @@ def commentstream():
                         replystr = makerply(editedlist)
                         botcomment.edit(replystr)
                         logging.info("updated.")
+                        logging.info("---------------")
                     else:
                         logging.info("quotes unchanged.")
+                        logging.info("---------------")
 
             else:
                 logging.info("comment doesn't quote the Quran. ignoring...")
+                logging.info("---------------")
         else:
             logging.info("bot's own comment. ignoring...")
+            logging.info("---------------")
 
 if __name__ == '__main__':
     r = login()
