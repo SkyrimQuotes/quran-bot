@@ -2,11 +2,12 @@
 
 import re
 import requests
+import logging
 
 
 def checktext(li):
     """checktext(li): li is the text you want to check if it quotes the Qur'an.
-    It can be either a list or a string."""
+    It can be either a list of strings or a string."""
     foundlist = []
     # Regular expression for detecting quotes from the Qur'an
     pattern = "(qur'?an|koran)(\s*[a-z]*\s*[a-z]*\s*)(\d+):(\d+)-?(\d+)?"
@@ -173,3 +174,156 @@ def processlist(ls):
             returnlist.extend(li)
 
     return returnlist
+
+
+def procsubmission(subm):
+    """procsubmission(subm): subm is the submission to be processed. This function does all the heavy lifting."""
+    title = str(subm.title)
+    selftext = str(subm.selftext)
+    logging.info("found post: " + str(title))
+    requestedlist = checktext([title, selftext])
+    # if it quoted the Qur'an:
+    if requestedlist:
+        logging.info("post passed check: " + str(title))
+        hasposted = checkrepliesforposts(subm)
+        proclist = processlist(requestedlist)
+        # if the bot hasn't replied yet:
+        if not hasposted[0]:
+            logging.info("haven't posted a reply yet.")
+            replystr = makerply(proclist)
+            subm.reply(replystr)
+            logging.info("replied.")
+        # if the bot replied:
+        else:
+            logging.info("already replied.")
+            botcomment = hasposted[1]
+            botcomtext = botcomment.body
+            inputlist = set(proclist)
+            # checks metadata. if the post was edited with different quotes
+            # (read: isn't exactly what the bot had posted):
+            editedlist = checkmetadata(botcomtext, inputlist)
+            if editedlist:
+                # edit the reply with the new quotes.
+                logging.info("post was edited with more quotes. updating reply...")
+                replystr = makerply(editedlist)
+                botcomment.edit(replystr)
+                logging.info("updated.")
+                logging.info("---------------")
+            else:
+                logging.info("quotes unchanged.")
+                logging.info("---------------")
+    else:
+        logging.info("post doesn't quote the Quran. ignoring...")
+        logging.info("---------------")
+
+
+def proccomment(com):
+    """proccomment(com): com is the comment to be processed. This function does all the heavy lifting."""
+    selftext = com.body
+    author = str(com.author.name)
+    logging.info("found comment by " + author)
+    # so it doesn't reply to itself. otherwise, look above. mostly the same code.
+    if author != "QuranBot":
+        requestedlist = checktext(selftext)
+        if requestedlist:
+            logging.info(author + "'s comment passed check.")
+            hasposted = checkrepliesforcomments(com)
+            proclist = processlist(requestedlist)
+            if not hasposted[0]:
+                logging.info("haven't posted a reply yet.")
+                replystr = makerply(proclist)
+                com.reply(replystr)
+                logging.info("replied.")
+            else:
+                logging.info("already replied.")
+                botcomment = hasposted[1]
+                botcomtext = botcomment.body
+                inputlist = set(proclist)
+                editedlist = checkmetadata(botcomtext, inputlist)
+                if editedlist:
+                    logging.info("comment was edited with more quotes. updating reply...")
+                    replystr = makerply(editedlist)
+                    botcomment.edit(replystr)
+                    logging.info("updated.")
+                    logging.info("---------------")
+                else:
+                    logging.info("quotes unchanged.")
+                    logging.info("---------------")
+
+        else:
+            logging.info("comment doesn't quote the Quran. ignoring...")
+            logging.info("---------------")
+    else:
+        logging.info("bot's own comment. ignoring...")
+        logging.info("---------------")
+
+
+def proceditcom(com):
+    """proceditcom(com): com is the edited comment to be processed. This function does all the heavy lifting."""
+    hasposted = checkrepliesforcomments(com)
+    if not hasposted[0]:
+        return
+    selftext = com.body
+    author = str(com.author.name)
+    logging.info("found comment by " + author)
+    if author != "QuranBot":
+        requestedlist = checktext(selftext)
+        if requestedlist:
+            logging.info(author + "'s comment passed check.")
+            proclist = processlist(requestedlist)
+            botcomment = hasposted[1]
+            botcomtext = botcomment.body
+            inputlist = set(proclist)
+            editedlist = checkmetadata(botcomtext, inputlist)
+            if editedlist:
+                logging.info("comment was edited with more quotes. updating reply...")
+                replystr = makerply(editedlist)
+                botcomment.edit(replystr)
+                logging.info("updated.")
+                logging.info("---------------")
+            else:
+                logging.info("quotes unchanged.")
+                logging.info("---------------")
+
+        else:
+            logging.info("comment doesn't quote the Quran anymore. deleting reply...")
+            botcomment = hasposted[1]
+            botcomment.delete()
+            logging.info("deleted.")
+            logging.info("---------------")
+    else:
+        logging.info("bot's own comment. ignoring...")
+        logging.info("---------------")
+
+
+def proceditsub(subm):
+    """proceditsub(subm): subm is the edited submission to be processed. This function does all the heavy lifting."""
+    hasposted = checkrepliesforposts(subm)
+    if not hasposted[0]:
+        return
+    title = str(subm.title)
+    selftext = str(subm.selftext)
+    logging.info("found post: " + str(title))
+    requestedlist = checktext([title, selftext])
+    if requestedlist:
+        logging.info("post passed check: " + str(title))
+        proclist = processlist(requestedlist)
+        botcomment = hasposted[1]
+        botcomtext = botcomment.body
+        inputlist = set(proclist)
+        editedlist = checkmetadata(botcomtext, inputlist)
+        if editedlist:
+            logging.info("post was edited with more quotes. updating reply...")
+            replystr = makerply(editedlist)
+            botcomment.edit(replystr)
+            logging.info("updated.")
+            logging.info("---------------")
+        else:
+            logging.info("quotes unchanged.")
+            logging.info("---------------")
+    else:
+        logging.info("post doesn't quote the Quran anymore. deleting reply...")
+        botcomment = hasposted[1]
+        botcomment.delete()
+        logging.info("deleted.")
+        logging.info("---------------")

@@ -7,15 +7,23 @@ from functions import *
 # Private file, has one function: login(), which returns an authorized PRAW instance.
 from auth import login
 
-FORMAT = "COMM: %(message)s"
+
+FORMAT = "EDIT: %(message)s"
 logging.basicConfig(level = logging.INFO, format = FORMAT)
 
 
-def commentstream():
-    """ocmmentstream(): This function looks up new comments which quote the Qur'an."""
+def editedstream():
+    """editedstream(): This function looks up edited comments and posts which quote the Qur'an."""
 
-    for comment in sub.stream.comments():
-        proccomment(comment)
+    for comment in sub.stream.comments(pause_after = 1):
+        if comment is None:
+            break
+        proceditcom(comment)
+
+    for post in sub.stream.submissions(pause_after = 1):
+        if post is None:
+            break
+        proceditsub(post)
 
 if __name__ == '__main__':
     r = login()
@@ -23,8 +31,11 @@ if __name__ == '__main__':
     while True:
         try:
             logging.info("starting...")
-            commentstream()
+            editedstream()
+            time.sleep(60)
+            logging.info("ended.")
+
         except Exception as e:
             trace = traceback.format_exc()
             logging.info("EXCEPTION: {} \n \n {}".format(str(e), str(trace)))
-            time.sleep(30)
+            time.sleep(120)
