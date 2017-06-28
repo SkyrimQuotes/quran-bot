@@ -10,7 +10,7 @@ def checktext(li):
     It can be either a list of strings or a string."""
     foundlist = []
     # Regular expression for detecting quotes from the Qur'an
-    pattern = "(qur'?an|koran)(\s*[a-z]*\s*[a-z]*\s*)(\d+):(\d+)-?(\d+)?"
+    pattern = "(qur'?an|koran)(\s*[a-z]*.*?[a-z]*\s*)(\d+):(\d+)-?(\d+)?"
 
     if type(li) == list:
         for text in li:

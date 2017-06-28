@@ -1,1 +1,0 @@
-worker: python commentbot.py & python submissionbot.py & python editedcom.py
